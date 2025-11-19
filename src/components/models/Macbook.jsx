@@ -9,17 +9,44 @@ Title: macbook pro M3 16 inch 2024
 */
 
 import React from 'react'
-import { useGLTF, useVideoTexture } from '@react-three/drei'
+import { useGLTF } from '@react-three/drei'
 import useMacbookStore from '../../store'
 import { noChangeParts } from '../../constants'
-import { Color } from 'three'
-import { useEffect } from 'react'
+import { Color, VideoTexture, SRGBColorSpace } from 'three'
+import { useEffect, useRef, useState } from 'react'
 
 export default function MacbookModel(props) {
   const { nodes, materials, scene } = useGLTF('/models/macbook-transformed.glb')
   const { color, texture } = useMacbookStore();
+  
+  const videoRef = useRef(null);
+  const [videoTexture, setVideoTexture] = useState(null);
 
-  const screen = useVideoTexture(texture);
+  // Manually manage video texture to avoid Suspense re-triggering
+  useEffect(() => {
+    const video = document.createElement('video');
+    videoRef.current = video;
+
+    video.src = texture;
+    video.muted = true;
+    video.loop = true;
+    video.playsInline = true;
+    video.crossOrigin = 'anonymous';
+
+    video.play().catch(() => {
+      // Autoplay might be blocked, but that's okay
+    });
+
+    const vTexture = new VideoTexture(video);
+    vTexture.colorSpace = SRGBColorSpace;
+    setVideoTexture(vTexture);
+
+    return () => {
+      video.pause();
+      video.src = '';
+      vTexture.dispose();
+    };
+  }, [texture]);
 
   useEffect(() => {
     scene.traverse((child) => {
@@ -51,7 +78,7 @@ export default function MacbookModel(props) {
       <mesh geometry={nodes.Object_96.geometry} material={materials.PaletteMaterial003} rotation={[Math.PI / 2, 0, 0]} />
       <mesh geometry={nodes.Object_107.geometry} material={materials.JvMFZolVCdpPqjj} rotation={[Math.PI / 2, 0, 0]} />
       <mesh geometry={nodes.Object_123.geometry} rotation={[Math.PI / 2, 0, 0]}>
-        <meshBasicMaterial map={screen} />
+        <meshBasicMaterial map={videoTexture} />
       </mesh>
       <mesh geometry={nodes.Object_127.geometry} material={materials.ZCDwChwkbBfITSW} rotation={[Math.PI / 2, 0, 0]} />
     </group>
