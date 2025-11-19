@@ -24,7 +24,7 @@ const ModelScroll = () => {
                 muted: true,
                 playsInline: true,
                 preload: 'auto',
-                crossorigin: 'anonymous',
+                crossOrigin: 'anonymous',
             });
 
             v.load();
