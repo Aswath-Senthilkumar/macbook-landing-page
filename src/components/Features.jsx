@@ -66,7 +66,7 @@ const ModelScroll = () => {
             .to('.box4', { opacity: 1, y: 0})
             .call(() => setTexture('/videos/feature-5.mp4'))
             .to('.box5', { opacity: 1, y: 0})
-    }, [])
+    }, [setTexture])
 
     return (
         <group ref={groupRef}>
